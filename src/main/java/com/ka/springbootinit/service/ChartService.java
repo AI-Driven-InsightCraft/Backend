@@ -10,4 +10,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ChartService extends IService<Chart> {
 
+    public String smartChat(String input);
+
+    public void handleChartUpdateError(long chartId, String execMessage);
 }

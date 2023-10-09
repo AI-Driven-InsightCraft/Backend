@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.ka.springbootinit.annotation.AuthCheck;
+import com.ka.springbootinit.bizmq.BIMessageProducer;
 import com.ka.springbootinit.common.BaseResponse;
 import com.ka.springbootinit.common.DeleteRequest;
 import com.ka.springbootinit.common.ErrorCode;
@@ -67,7 +68,9 @@ public class ChartController {
     @Resource
     private ThreadPoolExecutor threadPoolExecutor;
 
-    private final static Gson GSON = new Gson();
+    @Resource
+    private BIMessageProducer biMessageProducer;
+
 
     // region 增删改查
 
@@ -316,7 +319,7 @@ public class ChartController {
         //      OpenAI API. Not Free & VPN not Required
         // Todo: Adding an interface for AIManager
         //String result = aiManager.doChat(biModelId,userInput.toString());
-        String result = smartChat(userInput.toString());
+        String result = chartService.smartChat(userInput.toString());
         String[] splits = result.split("【【【【【");
         if (splits.length < 3) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "AI generate error");
@@ -417,12 +420,12 @@ public class ChartController {
             updateChart.setStatus("running");
             boolean b = chartService.updateById(updateChart);
             if (!b) {
-                handleChartUpdateError(chart.getId(), "Fail to update chart status");
+                chartService.handleChartUpdateError(chart.getId(), "Fail to update chart status");
                 return;
             }
             // Invoke AI API
             //String result = aiManager.doChat(biModelId,userInput.toString());
-            String result = smartChat(userInput.toString());
+            String result = chartService.smartChat(userInput.toString());
             String[] splits = result.split("【【【【【");
             if (splits.length < 3) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "AI generate error");
@@ -437,7 +440,7 @@ public class ChartController {
 
             boolean r= chartService.updateById(updateChartResult);
             if (!r) {
-                handleChartUpdateError(chart.getId(), "Fail to update chart status when finished");
+                chartService.handleChartUpdateError(chart.getId(), "Fail to update chart status when finished");
                 return;
             }
         }, threadPoolExecutor);
@@ -447,46 +450,72 @@ public class ChartController {
         return ResultUtils.success(biRensponse);
     }
 
+    @PostMapping("/gen/async/mq")
+    public BaseResponse<BiRensponse> genChartByAiAsyncMq(@RequestPart("file") MultipartFile multipartFile,
+                                                       GenChartByAiRequest getChartByAiRequest, HttpServletRequest request) {
+        String name = getChartByAiRequest.getName();
+        String goal = getChartByAiRequest.getGoal();
+        String chartType = getChartByAiRequest.getChartType();
 
-    private void handleChartUpdateError(long chartId, String execMessage){
-        Chart updateChartResult = new Chart();
-        updateChartResult.setId(chartId);
-        updateChartResult.setStatus("failed");
-        updateChartResult.setExecMessage(execMessage);
-        boolean updateResult = chartService.updateById(updateChartResult);
-        ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "Fail to update chart status again");
+        // Input Check
+        ThrowUtils.throwIf(StringUtils.isBlank(goal), ErrorCode.PARAMS_ERROR, "goal is empty");
+        ThrowUtils.throwIf(StringUtils.isBlank(name), ErrorCode.PARAMS_ERROR, "name is empty");
+        // Size Check, File Size should < 1MB
+        long size = multipartFile.getSize();
+        String originalFilename = multipartFile.getOriginalFilename();
+        final long ONE_MB = 1024 * 1024L;
+        ThrowUtils.throwIf(ONE_MB < size, ErrorCode.PARAMS_ERROR, "file size exceed upperbound");
+
+        // File Suffix Check
+        String suffix = FileUtil.getSuffix(originalFilename);
+        final List<String> validFileSuffixList = Arrays.asList("xlsx");
+        ThrowUtils.throwIf(!validFileSuffixList.contains(suffix), ErrorCode.PARAMS_ERROR, "invalid file suffix");
+
+
+        User loginUser = userService.getLoginUser(request);
+
+
+        // Limiter Test
+        redisLimiterManager.doRateLimit("genChartByAi_v" + String.valueOf(loginUser.getId()));
+
+//        StringBuilder userInput = new StringBuilder();
+//        userInput.append("You are a data analyst. I will give you my analysis goals and data. Please help me analyze the data and inform me of the conclusions.\n");
+//        userInput.append("goals: ").append(goal).append("\n");
+//        String res = ExcelUtils.excelToCsv(multipartFile);
+//        userInput.append("data: ").append(res).append("\n");
+
+        long biModelId = 1659171950288818178L;
+
+        StringBuilder userInput = new StringBuilder();
+        userInput.append("Goal: ");
+
+        String userGoal = goal;
+        if (StringUtils.isNotBlank(chartType)){
+            userGoal += ", Please use Chart Type: " + chartType;
+        }
+        userInput.append(userGoal);
+        String res = ExcelUtils.excelToCsv(multipartFile);
+        userInput.append(", Data: ").append(res).append("\n");
+
+        // insert to DB
+        Chart chart = new Chart();
+        chart.setName(name);
+        chart.setGoal(goal);
+        chart.setChartData(res);
+        chart.setChartType(chartType);
+        chart.setStatus("wait");
+
+        chart.setUserId(loginUser.getId());
+        boolean saveResult = chartService.save(chart);
+        ThrowUtils.throwIf(!saveResult,ErrorCode.SYSTEM_ERROR,"chart save error");
+
+        long newChartId = chart.getId();
+        biMessageProducer.sendMessage(String.valueOf(newChartId));
+
+        BiRensponse biRensponse = new BiRensponse();
+        biRensponse.setChartId(newChartId);
+        return ResultUtils.success(biRensponse);
     }
 
-    private String smartChat(String input) {
-        String prompt = "You are a data analyst and a front-end development expert. Moving forward, I will provide you with content following the following format:\n" +
-                "goal:\n" +
-                "{The requirement or objective of data analysis}\n" +
-                "data:\n" +
-                "{Raw data in CSV format, using \",\" as the delimiter}\n" +
-                "Please generate content based on these two sections in the specified format below (do not include any extra headers, endings, or comments):\n" +
-                "【【【【【\n" +
-                "{Front-end Echarts v5 option configuration JavaScript code to visualize the data effectively,without generating any additional content such as comments}\n" +
-                "【【【【【\n" +
-                "{Clear and detailed data analysis conclusions, without comments}\n" +
-                "Please note that your output should only contain 【【【【【 and \"{}\" (must include \"{\" and \"}\") along with the content inside {} and be sure to have Quotation for key and value. I first give you an response" +
-                "format example for Default Chart Type \"line\" (other Chart Types are similar): {\n" +
-                "  \"title\": {\n" +
-                "    \"text\": \"User tre d\",\n" +
-                "    \"subtext\": \"\"\n" +
-                "  },\n" +
-                "  \"xAxis\": {\n" +
-                "    \"type\": \"category\",\n" +
-                "    \"data\": [\"1\", \"2\", \"3\"]\n" +
-                "  },\n" +
-                "  \"yAxis\": {\n" +
-                "    \"type\": \"value\"\n" +
-                "  },\n" +
-                "  \"series\": [{\n" +
-                "    \"data\": [10, 20, 30],\n" +
-                "    \"type\": \"line\"\n" +
-                "  }]\n" +
-                "}\n\n" +
-                "\n";
-        return gpt3Manager.doChat(prompt + input);
-    }
+
 }
