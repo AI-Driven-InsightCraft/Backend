@@ -46,9 +46,9 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
-      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
-      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 # AI Api
 yuapi:
   client:
@@ -56,7 +56,7 @@ yuapi:
     secret-key: pmj5w0zbf9e96b0ev6sgzmpn28q1bdek
 openAI:
   api:
-    key: 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
+    key: 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
     url: https://api.openai.com/v1/chat/completions
   model: gpt-3.5-turbo
 

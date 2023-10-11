@@ -9,12 +9,7 @@ import com.ka.springbootinit.model.entity.Post;
 import com.ka.springbootinit.model.entity.PostFavour;
 import org.apache.ibatis.annotations.Param;
 
-/**
- * 帖子收藏数据库操作
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
- */
+
 public interface PostFavourMapper extends BaseMapper<PostFavour> {
 
     /**

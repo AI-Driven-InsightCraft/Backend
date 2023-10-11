@@ -6,10 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
-/**
- * 
- * @TableName chart
- */
+
 @TableName(value ="chart")
 @Data
 public class Chart implements Serializable {
