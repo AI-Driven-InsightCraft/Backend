@@ -19,9 +19,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Slf4j
 public class LogInterceptor {
 
-    /**
-     * 执行拦截
-     */
     @Around("execution(* com.ka.springbootinit.controller.*.*(..))")
     public Object doInterceptor(ProceedingJoinPoint point) throws Throwable {
         // 计时

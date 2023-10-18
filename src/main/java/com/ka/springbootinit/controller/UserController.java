@@ -6,7 +6,6 @@ import com.ka.springbootinit.common.BaseResponse;
 import com.ka.springbootinit.common.DeleteRequest;
 import com.ka.springbootinit.common.ErrorCode;
 import com.ka.springbootinit.common.ResultUtils;
-import com.ka.springbootinit.config.WxOpenConfig;
 import com.ka.springbootinit.constant.UserConstant;
 import com.ka.springbootinit.exception.BusinessException;
 import com.ka.springbootinit.exception.ThrowUtils;
@@ -23,18 +22,14 @@ import com.ka.springbootinit.service.UserService;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
-import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
-import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -46,8 +41,6 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private WxOpenConfig wxOpenConfig;
 
     // region 登录相关
 

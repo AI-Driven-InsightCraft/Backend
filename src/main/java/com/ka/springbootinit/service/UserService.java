@@ -8,7 +8,6 @@ import com.ka.springbootinit.model.vo.LoginUserVO;
 import com.ka.springbootinit.model.vo.UserVO;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
 
 public interface UserService extends IService<User> {

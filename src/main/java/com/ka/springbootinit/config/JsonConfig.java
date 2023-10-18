@@ -12,7 +12,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 public class JsonConfig {
 
     /**
-     * 添加 Long 转 json 精度丢失的配置
+     * Long -> json Precision lost problem
      */
     @Bean
     public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {

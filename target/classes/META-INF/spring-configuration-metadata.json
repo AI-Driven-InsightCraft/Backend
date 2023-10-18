@@ -9,11 +9,6 @@
       "name": "spring.redis",
       "type": "com.ka.springbootinit.config.RedissonConfig",
       "sourceType": "com.ka.springbootinit.config.RedissonConfig"
-    },
-    {
-      "name": "wx.open",
-      "type": "com.ka.springbootinit.config.WxOpenConfig",
-      "sourceType": "com.ka.springbootinit.config.WxOpenConfig"
     }
   ],
   "properties": [
@@ -72,16 +67,6 @@
       "sourceType": "com.ka.springbootinit.config.RedissonConfig"
     },
     {
-      "name": "wx.open.app-id",
-      "type": "java.lang.String",
-      "sourceType": "com.ka.springbootinit.config.WxOpenConfig"
-    },
-    {
-      "name": "wx.open.app-secret",
-      "type": "java.lang.String",
-      "sourceType": "com.ka.springbootinit.config.WxOpenConfig"
-    },
-    {
       "name": "wx.open.appId",
       "type": "java.lang.String",
       "description": "Description for wx.open.appId."
@@ -90,11 +75,6 @@
       "name": "wx.open.appSecret",
       "type": "java.lang.String",
       "description": "Description for wx.open.appSecret."
-    },
-    {
-      "name": "wx.open.wx-mp-service",
-      "type": "me.chanjar.weixin.mp.api.WxMpService",
-      "sourceType": "com.ka.springbootinit.config.WxOpenConfig"
     }
   ],
   "hints": []
