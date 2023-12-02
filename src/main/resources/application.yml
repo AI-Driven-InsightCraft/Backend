@@ -56,6 +56,6 @@ yuapi:
     secret-key: pmj5w0zbf9e96b0ev6sgzmpn28q1bdek
 openAI:
   api:
-    key: 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
+    key: kaka
     url: https://api.openai.com/v1/chat/completions
   model: gpt-3.5-turbo

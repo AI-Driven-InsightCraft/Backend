@@ -10,50 +10,23 @@ import lombok.Data;
 @TableName(value ="user")
 @Data
 public class User implements Serializable {
-    /**
-     * id
-     */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
-    /**
-     * 
-     */
     private String userAccount;
 
-    /**
-     * 
-     */
     private String userPassword;
 
-    /**
-     * 
-     */
     private String userName;
 
-    /**
-     * 
-     */
     private String userAvatar;
 
-    /**
-     * user/admin
-     */
     private String userRole;
 
-    /**
-     * 
-     */
     private Date createTime;
 
-    /**
-     * 
-     */
     private Date updateTime;
 
-    /**
-     * 
-     */
     @TableLogic
     private Integer isDelete;
 

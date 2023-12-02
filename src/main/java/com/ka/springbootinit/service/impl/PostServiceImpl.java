@@ -74,11 +74,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         String title = post.getTitle();
         String content = post.getContent();
         String tags = post.getTags();
-        // 创建时，参数不能为空
         if (add) {
             ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
         }
-        // 有参数则校验
         if (StringUtils.isNotBlank(title) && title.length() > 80) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "标题过长");
         }

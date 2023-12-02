@@ -5,9 +5,6 @@ import com.ka.springbootinit.common.ErrorCode;
 
 public class BusinessException extends RuntimeException {
 
-    /**
-     * 错误码
-     */
     private final int code;
 
     public BusinessException(int code, String message) {

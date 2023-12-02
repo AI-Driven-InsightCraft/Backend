@@ -17,7 +17,6 @@ public class AIManager {
     private YuCongMingClient yuCongMingClient;
 
     public String doChat(long modelId, String message){
-        // 构造请求
         DevChatRequest devChatRequest = new DevChatRequest();
         devChatRequest.setModelId(modelId);
         devChatRequest.setMessage(message);
